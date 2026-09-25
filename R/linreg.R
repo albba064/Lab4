@@ -117,31 +117,19 @@ plot.linreg <- function(object, ...){
   library(ggplot2)
   data <- data.frame(fitted.values = object$fitted.values, residuals = object$residuals, medi = median(object$residuals))
 
-<<<<<<< HEAD
-  ggplot(data, aes(x = fitted.values, y = residuals)) +
-=======
   ggplot(data, aes(x = fitted.values, y = residuals, z = medi)) +
->>>>>>> 8f15c41007047f8b8e7e5282ceef0ba52bd282f9
     geom_point() +
     geom_hline(yintercept = 0, linetype = "dashed") +
     ylim(min(data$residuals), max(data$residuals))
 }
 test <- linreg(Petal.Length~Species, iris)
 
-<<<<<<< HEAD
 data = data.frame(x = test$fitted.values, y = test$residuals)
 #print(test)
-=======
-
-# print(test)
->>>>>>> 8f15c41007047f8b8e7e5282ceef0ba52bd282f9
 # pred(test)
 # coef(test)
 # resid(test)
 # plot(test)
-<<<<<<< HEAD
 library(ggplot2)
-ggplot(data = data, aes(x = x, y = y)) + geom_point() + geom_smooth(method="loess")
+ggplot(data = data, aes(x = x, y = y)) + geom_point() + geom_smooth(formula = )
 plot(test, 1)
-=======
->>>>>>> 8f15c41007047f8b8e7e5282ceef0ba52bd282f9
