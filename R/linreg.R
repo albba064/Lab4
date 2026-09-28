@@ -148,12 +148,8 @@ plot.linreg <- function(object, ...){
     # + ylim(min(data$residuals), max(data$residuals))
 }
 
-#
+# summary of linreg class
 summary.linreg <- function(object, ...){
-  coefficients <- object$coefficients
-  standard_error <- sqrt(object$var_coefficients)
-  t_value <- object$t_values
-  p_value <- object$p_value
 
   # Print the function call
   cat("Call:\n")
@@ -170,14 +166,6 @@ summary.linreg <- function(object, ...){
   print(coef_tab, digits=6)
 
   cat("\nResidual standard error:", format(sqrt(object$residual_variance), digits=4), "on", object$df, "degrees of freedom")
-  # result <- list(
-  #   call = object$call,
-  #   coefficients = coef_tab,
-  #   df = object$df,
-  #   residual_variance = object$residual_variance
-  # )
-  # class(result) <- "summary.linreg"
-  # return(result)
 
 }
 test <- linreg(Petal.Length~Species, iris)
