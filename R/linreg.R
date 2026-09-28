@@ -94,6 +94,7 @@ linreg <- function(formula, data){
 
 }
 
+# Method print() for linreg
 print.linreg <- function(x, ...){
   cat("Call:\n")
   print(x$call)
@@ -104,6 +105,49 @@ print.linreg <- function(x, ...){
   invisible(x)
 
 }
+
+# function returns residual vector
+resid.linreg <- function(object, ...){
+  return((object$residuals))
+}
+
+
+# Create pred.linreg
+pred <- function(object, ...){
+  UseMethod("pred")
+}
+
+pred.linreg <- function(object, ...) {
+  object$fitted.values
+}
+
+# function returns coefficients as named vector
+# Create generic coef()
+coef <- function(object, ...) {
+  UseMethod("coef")
+}
+
+coef.linreg <- function(object, ...) {
+  object$coefficients
+}
+
+
+
+
+
+# fix plot method
+plot.linreg <- function(object, ...){
+  # fix ggplot2 load
+  library(ggplot2)
+  data <- data.frame(fitted.values = object$fitted.values, residuals = object$residuals, medi = median(object$residuals))
+  smooth_line = lowess()
+  ggplot(data, aes(x = fitted.values, y = residuals)) +
+    geom_point() +
+    geom_smooth(method = "lowess", group = 1) +
+    geom_hline(yintercept = 0, linetype = "dashed")
+    # + ylim(min(data$residuals), max(data$residuals))
+}
+
 #
 summary.linreg <- function(object, ...){
   coefficients <- object$coefficients
@@ -136,47 +180,12 @@ summary.linreg <- function(object, ...){
   # return(result)
 
 }
-
-# Create pred.linreg
-pred <- function(object, ...){
-  UseMethod("pred")
-}
-pred.linreg <- function(object){
-  result <- drop(object$fitted.values)
-  class(result) <- "pred"
-  return(result)
-
-}
-
-# function returns coefficients as named vector
-coef.linreg <- function(object, ...){
-  return(object$coefficients)
-}
-
-# function returns residual vector
-resid.linreg <- function(object, ...){
-  return(drop(object$residuals))
-}
-
-
-# fix plot method
-plot.linreg <- function(object, ...){
-  # fix ggplot2 load
-  library(ggplot2)
-  data <- data.frame(fitted.values = object$fitted.values, residuals = object$residuals, medi = median(object$residuals))
-  smooth_line = lowess()
-  ggplot(data, aes(x = fitted.values, y = residuals)) +
-    geom_point() +
-    geom_smooth(method = "lowess", group = 1) +
-    geom_hline(yintercept = 0, linetype = "dashed")
-    # + ylim(min(data$residuals), max(data$residuals))
-}
 test <- linreg(Petal.Length~Species, iris)
 
 data = data.frame(x = test$fitted.values, y = test$residuals)
 print(test)
 # pred(test)
-# coef(test)
+coef(test)
 resid(test)
 plot(test)
 summary(test)
