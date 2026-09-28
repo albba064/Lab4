@@ -158,14 +158,14 @@ summary.linreg <- function(object, ...){
   cat("\nCoefficients:\n")
   # Create a table for coefficients, similar to summary.lm() output
   coef_tab <- cbind(
-    Estimate = coefficients,
-    'Std. Error' = standard_error,
-    't value' = t_value,
-    'Pr(>|t|)' = p_value
+    Estimate = object$coefficients,
+    'Std. Error' = object$standard_errors,
+    't value' = object$t_value,
+    'Pr(>|t|)' = object$p_value
   )
   print(coef_tab, digits=6)
 
-  cat("\nResidual standard error:", format(sqrt(object$residual_variance), digits=4), "on", object$df, "degrees of freedom")
+  cat("\nResidual standard error:", format(sqrt(object$sigma_squared), digits=4), "on", object$df, "degrees of freedom")
 
 }
 test <- linreg(Petal.Length~Species, iris)
