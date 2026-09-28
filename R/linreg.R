@@ -38,6 +38,7 @@ linreg <- function(formula, data){
   # Calculate regression coefficients w. QR
   #-----------------------------------------------
   beta_hat <- drop(solve(R) %*% t(Q) %*% y)
+  names(beta_hat) <- colnames(X)
   #-----------------------------------------------
 
   # Fitted values
