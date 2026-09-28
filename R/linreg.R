@@ -116,20 +116,34 @@ plot.linreg <- function(object, ...){
   # fix ggplot2 load
   library(ggplot2)
   data <- data.frame(fitted.values = object$fitted.values, residuals = object$residuals, medi = median(object$residuals))
-
-  ggplot(data, aes(x = fitted.values, y = residuals, z = medi)) +
+  smooth_line = lowess()
+  ggplot(data, aes(x = fitted.values, y = residuals)) +
     geom_point() +
-    geom_hline(yintercept = 0, linetype = "dashed") +
-    ylim(min(data$residuals), max(data$residuals))
+    geom_smooth(method = "lowess", group = 1) +
+    geom_hline(yintercept = 0, linetype = "dashed")
+    # + ylim(min(data$residuals), max(data$residuals))
 }
 test <- linreg(Petal.Length~Species, iris)
 
 data = data.frame(x = test$fitted.values, y = test$residuals)
-#print(test)
+print(test)
 # pred(test)
 # coef(test)
 # resid(test)
-# plot(test)
+plot(test)
+summary(test)
 library(ggplot2)
 ggplot(data = data, aes(x = x, y = y)) + geom_point() + geom_smooth(formula = )
 plot(test, 1)
+lm_test <- lm(Petal.Length~Species, iris)
+lm_test$residuals |> summary()
+
+par(mfrow = c(1, 1))
+plot(lm_test, 1)
+lines(lowess(lm_test$fitted.values, lm_test$residuals), col = "blue", lt = 2)
+
+plot(lm_test$fitted.values, lm_test$residuals)
+lines(lowess(lm_test$fitted.values, lm_test$residuals), col = "red")
+abline(h = 0, lty = 3, col = "gray")
+
+lowess()
