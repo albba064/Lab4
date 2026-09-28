@@ -1,43 +1,90 @@
 
 linreg <- function(formula, data){
-  matrix_X <- model.matrix(formula, data)
-  dependent_Y <- data[,all.vars(formula)[1]]
 
-  # Regressions coefficients
-  coef <- drop(solve(crossprod(matrix_X)) %*% t(matrix_X) %*% dependent_Y)
+  X <- model.matrix(formula, data)
+  y <- data[, all.vars(formula)[1]]
+
+  n <- nrow(X)
+  p <- ncol(X)
+
+  #-----------------------------------------------
+  # QR-decomposition, using Gram-Schmidt
+  #-----------------------------------------------
+  X_temp <- X  # Temporary copy of X which will be updated by the algorithm
+  Q <- matrix(0, nrow = n, ncol = p)
+  R <- matrix(0, nrow = p, ncol = p)
+
+  for (j in 1:p) {
+
+    # Length of current column
+    R[j, j] <- sqrt(sum(X_temp[, j]^2))
+
+    # Normalize current column
+    Q[, j] <- X_temp[, j] / R[j, j]
+
+    if (j < p) {
+      for (k in (j + 1):p) {
+
+        # Projection of column k onto Q[, j]
+        R[j, k] <- sum(Q[, j] * X_temp[, k])
+
+        # Remove projection
+        X_temp[, k] <- X_temp[, k] - Q[, j] * R[j, k]
+      }
+    }
+  }
+
+  #-----------------------------------------------
+  # Calculate regression coefficients w. QR
+  #-----------------------------------------------
+  beta_hat <- drop(solve(R) %*% t(Q) %*% y)
+  #-----------------------------------------------
 
   # Fitted values
-  y_fit <- matrix_X %*% coef
+  fitted_values <- X %*% beta_hat
 
   # Residuals
-  res <- dependent_Y - y_fit
+  residuals <- y - fitted_values
 
   # Degrees of freedom df
-  df <- length(dependent_Y) - ncol(matrix_X)
+  df <- n - p
 
   # Residual variance
-  residual_variance <- (crossprod(res) / df)[[1]]
+  sigma_squared <- sum(residuals^2) / df
 
-  # Variance of the regression coefficients
-  var_reg_coef <- residual_variance * diag(solve(crossprod(matrix_X)))
+  #-----------------------------------------------
+  # Vcov. matrix of beta_hat
+  #-----------------------------------------------
+  var_beta_hat <- sigma_squared * solve(R) %*% t(solve(R))
+  #-----------------------------------------------
 
-  # t-values for each coefficient
-  t_val_reg_coef <-  coef / sqrt(var_reg_coef)
+  # Variance of regrission coefficients
+  var_coefficients <- diag(var_beta_hat)
 
-  # p-values for each coefficient
-  p_val_reg_coef <- 2 * pt(-abs(t_val_reg_coef), df = df)
+  # Standard errors
+  standard_errors <- sqrt(var_coefficients)
+
+  # t-values
+  t_values <- beta_hat / standard_errors
+
+  # p-values
+  p_values <- 2 * pt(-abs(t_values), df = df)
+
+
 
   # Create linreg object
   result <- list(
     call = match.call(),
-    coefficients = coef,
-    fitted.values = y_fit,
-    residuals = res,
+    coefficients = beta_hat,
+    fitted.values = fitted_values,
+    residuals = residuals,
     df = df,
-    residual_variance = residual_variance,
-    var_coefficients = var_reg_coef,
-    t_values = t_val_reg_coef,
-    p_values = p_val_reg_coef
+    sigma_squared = sigma_squared,
+    var_beta_hat = var_beta_hat,
+    var_coefficients = var_coefficients,
+    standard_errors = standard_errors,
+    t_values = t_values,
+    p_values = p_values
   )
 
   class(result) <- "linreg"
@@ -57,7 +104,7 @@ print.linreg <- function(x, ...){
   invisible(x)
 
 }
-
+#
 summary.linreg <- function(object, ...){
   coefficients <- object$coefficients
   standard_error <- sqrt(object$var_coefficients)
@@ -111,6 +158,7 @@ resid.linreg <- function(object, ...){
   return(drop(object$residuals))
 }
 
+
 # fix plot method
 plot.linreg <- function(object, ...){
   # fix ggplot2 load
@@ -129,7 +177,7 @@ data = data.frame(x = test$fitted.values, y = test$residuals)
 print(test)
 # pred(test)
 # coef(test)
-# resid(test)
+resid(test)
 plot(test)
 summary(test)
 library(ggplot2)
