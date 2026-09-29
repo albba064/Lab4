@@ -1,4 +1,27 @@
-
+#' Linear regression model
+#'
+#' Fits a linear regression model where the regression coefficients and their variance
+#' are calculated using a QR decomposition of the design matrix.
+#'
+#' @param formula A formula describing the regression model.
+#' @param data A data frame containing the variables used in the model.
+#'
+#' @return An object of class \code{linreg} containing the following elements:
+#' \describe{
+#' \item{call}{The function call used to fit the model.}
+#' \item{coefficients}{A named vector containing the estimated regression coefficients.}
+#' \item{fitted.values}{A vector containing the fitted values.}
+#' \item{residuals}{A vector containing the residuals.}
+#' \item{df}{The residual degrees of freedom.}
+#' \item{sigma_squared}{The estimated residual variance.}
+#' \item{var_beta_hat}{The variance-covariance matrix of the estimated regression coefficients.}
+#' \item{var_coefficients}{The estimated variance of each regression coefficient.}
+#' \item{standard_errors}{The standard errors of the estimated regression coefficients.}
+#' \item{t_values}{The t-statistics for the regression coefficients.}
+#' \item{p_values}{The two-sided p-values for the regression coefficients.}
+#' }
+#'
+#'@export
 linreg <- function(formula, data){
 
   X <- model.matrix(formula, data)
@@ -95,7 +118,16 @@ linreg <- function(formula, data){
 
 }
 
-# Method print() for linreg
+#' Print a linreg model
+#'
+#' Prints the function call and estimated regression coefficients from a \code{linreg} object.
+#'
+#' @param x An object of class \code{linreg}.
+#' @param ... Additional arguments.
+#'
+#' @return The \code{linreg} object
+#'
+#' @export
 print.linreg <- function(x, ...){
   cat("Call:\n")
   print(x$call)
@@ -107,49 +139,78 @@ print.linreg <- function(x, ...){
 
 }
 
-# function returns residual vector
+#' Extract residuals
+#'
+#' Extracts the residuals from a \code{linreg} object.
+#'
+#' @param object An object of class \code{linreg}.
+#' @param ... Additional arguments.
+#'
+#' @return A numeric vector containing the residuals.
+#'
+#' @export
 resid.linreg <- function(object, ...){
   return((object$residuals))
 }
 
 
-# Create pred.linreg
+
+#' Extract predicted values
+#'
+#' Generic function for extracting predicted values from a model.
+#'
+#' @param object A model object.
+#' @param ... Additional arguments.
+#'
+#' @return The predicted values.
+#'
+#' @export
 pred <- function(object, ...){
   UseMethod("pred")
 }
 
+#' Extract predicted values from a linreg model
+#'
+#' Extracts the fitted values from a \code{linreg} object.
+#'
+#' @param object An object of class \code{linreg}.
+#' @param ... Additional arguments.
+#'
+#' @return A numeric vector containing the fitted values, with class
+#'   \code{pred}.
+#'
+#' @export
 pred.linreg <- function(object, ...) {
   object$fitted.values
 }
 
-# function returns coefficients as named vector
-# Create generic coef()
-coef <- function(object, ...) {
-  UseMethod("coef")
-}
+#' Extract regression coefficients
+#'
+#' Extracts the estimated regression coefficients from a \code{linreg} object.
+#'
+#' @param object An object of class \code{linreg}.
+#' @param ... Additional arguments.
+#'
+#' @return A named numeric vector containing the estimated regression coefficients.
+#' @export
 
 coef.linreg <- function(object, ...) {
   object$coefficients
 }
 
 
+#' Summarize a linreg model
+#'
+#' Prints a summary of a \code{linreg} object, including the estimated regression coefficients, standard errors,
+#' t-statistics, p-values, residual standard error, and residual degrees of freedom.
+#'
+#' @param object An object of class \code{linreg}.
+#' @param ... Additional arguments.
+#'
+#' @return The \code{linreg} object, invisibly.
+#'
+#' @export
 
-
-
-# fix plot method
-plot.linreg <- function(object, ...){
-  # fix ggplot2 load
-  library(ggplot2)
-  data <- data.frame(fitted.values = object$fitted.values, residuals = object$residuals, medi = median(object$residuals))
-  smooth_line = lowess()
-  ggplot(data, aes(x = fitted.values, y = residuals)) +
-    geom_point() +
-    geom_smooth(method = "lowess", group = 1) +
-    geom_hline(yintercept = 0, linetype = "dashed")
-    # + ylim(min(data$residuals), max(data$residuals))
-}
-
-# summary of linreg class
 summary.linreg <- function(object, ...){
 
   # Print the function call
@@ -169,6 +230,22 @@ summary.linreg <- function(object, ...){
   cat("\nResidual standard error:", format(sqrt(object$sigma_squared), digits=4), "on", object$df, "degrees of freedom")
 
 }
+
+
+# fix plot method
+plot.linreg <- function(object, ...){
+  # fix ggplot2 load
+  library(ggplot2)
+  data <- data.frame(fitted.values = object$fitted.values, residuals = object$residuals, medi = median(object$residuals))
+  smooth_line = lowess()
+  ggplot(data, aes(x = fitted.values, y = residuals)) +
+    geom_point() +
+    geom_smooth(method = "lowess", group = 1) +
+    geom_hline(yintercept = 0, linetype = "dashed")
+    # + ylim(min(data$residuals), max(data$residuals))
+}
+
+
 test <- linreg(Petal.Length~Species, iris)
 
 data = data.frame(x = test$fitted.values, y = test$residuals)
