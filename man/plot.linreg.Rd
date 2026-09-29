@@ -9,15 +9,10 @@
 \arguments{
 \item{object}{An object of class \code{linreg}.}
 
-\item{...}{Aditional arguments. Currently not used.}
+\item{...}{Additional arguments.}
 }
 \description{
 Creates diagnostic plots for an object of class \code{linreg}.
 The function produces a Residuals vs Fitted plot and a
 Scale-Location plot using \code{ggplot2}.
-}
-\examples{
-model <- linreg(Petal.Length ~ Species, data = iris)
-plot(model)
-
 }

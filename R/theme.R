@@ -12,6 +12,9 @@
 #' @references
 #' \url{https://www.ida.liu.se/~732A94/wwwfiles/filer/LiU_grafisk_manual.pdf}
 #'
+#' @import ggplot2
+#' @import png
+#' @import grid
 #' @export
 #'
 theme <- function(base_size = 10) {
@@ -64,28 +67,36 @@ theme <- function(base_size = 10) {
     plot.caption = ggplot2::element_text(
       size = base_size * 0.5,
       hjust = 1,
-      margin = ggplot2::margin(t = 57)
+      margin = ggplot2::margin(t = 45)
     ),
     plot.margin = ggplot2::margin(
-      t = 20,
-      r = 20,
-      b = 30,
-      l = 20
+      t = 40,
+      r = 40,
+      b = 80,
+      l = 40
     ),
     plot.background = ggplot2::element_rect(
       fill = "#00b9e7"
     ),
   )
-  png <- png::readPNG("logos/liu_sec.png", native = TRUE) |>
-    grid::rasterGrob()
+  logo_path <- system.file("logos", "liu_sec.png", package = "Lab4")
+  png <- png::readPNG(logo_path, native = TRUE) #|>
+   # grid::rasterGrob()
 
+  grob <- grid::rasterGrob(
+    png,
+    x = grid::unit(0.255, "npc"),
+    y = grid::unit(-0.35, "npc"),
+    width = grid::unit(0.3, "npc"),
+    just = c("right", "bottom")
+  )
 
   liu_logo <- ggplot2::annotation_custom(
-    png,
-    xmin = 1.075,
-    xmax = 3.0,
-    ymin = -3.5,
-    ymax = 6.5
+    grob = grob,
+    xmin = -Inf,
+    xmax = Inf,
+    ymin = -Inf,
+    ymax = Inf
   )
   return(
     list(

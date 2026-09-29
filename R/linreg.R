@@ -21,10 +21,11 @@
 #' \item{p_values}{The two-sided p-values for the regression coefficients.}
 #' }
 #'
-#'@export
-linreg <- function(formula, data){
-
-  X <- model.matrix(formula, data)
+#' @import stats
+#'
+#' @export
+linreg <- function(formula, data) {
+  X <- stats::model.matrix(formula, data)
   y <- data[, all.vars(formula)[1]]
 
   n <- nrow(X)
@@ -33,12 +34,11 @@ linreg <- function(formula, data){
   #-----------------------------------------------
   # QR-decomposition, using Gram-Schmidt
   #-----------------------------------------------
-  X_temp <- X  # Temporary copy of X which will be updated by the algorithm
+  X_temp <- X # Temporary copy of X which will be updated by the algorithm
   Q <- matrix(0, nrow = n, ncol = p)
   R <- matrix(0, nrow = p, ncol = p)
 
   for (j in 1:p) {
-
     # Length of current column
     R[j, j] <- sqrt(sum(X_temp[, j]^2))
 
@@ -47,7 +47,6 @@ linreg <- function(formula, data){
 
     if (j < p) {
       for (k in (j + 1):p) {
-
         # Projection of column k onto Q[, j]
         R[j, k] <- sum(Q[, j] * X_temp[, k])
 
@@ -92,10 +91,7 @@ linreg <- function(formula, data){
   t_values <- beta_hat / standard_errors
 
   # p-values
-  p_values <- 2 * pt(-abs(t_values), df = df)
-
-  # t-values for each coefficient
-  t_val_reg_coef <- coef / sqrt(var_reg_coef)
+  p_values <- 2 * stats::pt(-abs(t_values), df = df)
 
 
   # Create linreg object
@@ -120,7 +116,8 @@ linreg <- function(formula, data){
 
 #' Print a linreg model
 #'
-#' Prints the function call and estimated regression coefficients from a \code{linreg} object.
+#' Prints the function call and estimated regression
+#' coefficients from a \code{linreg} object.
 #'
 #' @param x An object of class \code{linreg}.
 #' @param ... Additional arguments.
@@ -128,7 +125,7 @@ linreg <- function(formula, data){
 #' @return The \code{linreg} object
 #'
 #' @export
-print.linreg <- function(x, ...){
+print.linreg <- function(x, ...) {
   cat("Call:\n")
   print(x$call)
 
@@ -136,6 +133,10 @@ print.linreg <- function(x, ...){
   print(x$coefficients)
 
   invisible(x)
+}
+
+resid <- function(object, ...) {
+  UseMethod("resid")
 }
 
 #' Extract residuals
@@ -148,10 +149,9 @@ print.linreg <- function(x, ...){
 #' @return A numeric vector containing the residuals.
 #'
 #' @export
-resid.linreg <- function(object, ...){
-  return((object$residuals))
+resid.linreg <- function(object, ...) {
+  return(object$residuals)
 }
-
 
 
 #' Extract predicted values
@@ -164,7 +164,7 @@ resid.linreg <- function(object, ...){
 #' @return The predicted values.
 #'
 #' @export
-pred <- function(object, ...){
+pred <- function(object, ...) {
   UseMethod("pred")
 }
 
@@ -190,9 +190,9 @@ pred.linreg <- function(object, ...) {
 #' @param object An object of class \code{linreg}.
 #' @param ... Additional arguments.
 #'
-#' @return A named numeric vector containing the estimated regression coefficients.
+#' @return A named numeric vector containing the estimated regression
+#' coefficients.
 #' @export
-
 coef.linreg <- function(object, ...) {
   object$coefficients
 }
@@ -200,18 +200,20 @@ coef.linreg <- function(object, ...) {
 
 #' Summarize a linreg model
 #'
-#' Prints a summary of a \code{linreg} object, including the estimated regression coefficients, standard errors,
-#' t-statistics, p-values, residual standard error, and residual degrees of freedom.
+#' Prints a summary of a \code{linreg} object, including the
+#' estimated regression coefficients, standard errors,
+#' t-statistics, p-values, residual standard error, and residual
+#' degrees of freedom.
 #'
 #' @param object An object of class \code{linreg}.
 #' @param ... Additional arguments.
 #'
 #' @return The \code{linreg} object, invisibly.
 #'
+#' @import stats
 #' @export
 
-summary.linreg <- function(object, ...){
-
+summary.linreg <- function(object, ...) {
   # Print the function call
   cat("Call:\n")
   print(object$call)
@@ -220,14 +222,24 @@ summary.linreg <- function(object, ...){
   # Create a table for coefficients, similar to summary.lm() output
   coef_tab <- cbind(
     Estimate = object$coefficients,
-    'Std. Error' = object$standard_errors,
-    't value' = object$t_value,
-    'Pr(>|t|)' = object$p_value
+    "Std. Error" = object$standard_errors,
+    "t value" = object$t_value,
+    "Pr(>|t|)" = object$p_value
   )
-  print(coef_tab, digits = 6)
+  stats::printCoefmat(coef_tab, digits = 6)
 
-  cat("\nResidual standard error:", format(sqrt(object$residual_variance), digits = 4), "on", object$df, "degrees of freedom")
+  cat(
+    "\nResidual standard error:",
+    format(sqrt(object$sigma_squared), digits = 4),
+    "on",
+    object$df,
+    "degrees of freedom"
+  )
 }
+
+# plot <- function(object, ...) {
+#   UseMethod("plot")
+# }
 
 #' Plot diagnostic plots for a linreg object
 #'
@@ -236,13 +248,13 @@ summary.linreg <- function(object, ...){
 #' Scale-Location plot using \code{ggplot2}.
 #'
 #' @param object An object of class \code{linreg}.
+#' @param ... Additional arguments.
 #'
-#' @examples
-#' model <- linreg(Petal.Length ~ Species, data = iris)
-#' plot(model)
+#' @import ggplot2
+#' @import stats
 #'
 #' @export
-plot.linreg <- function(object) {
+plot.linreg <- function(object, ...) {
   std_resids <- object$residuals /
     sqrt(object$residual_variance)
 
@@ -255,12 +267,12 @@ plot.linreg <- function(object) {
     scale_resids = scale_resids
   )
 
-  smooth_line <- lowess(
+  smooth_line <- stats::lowess(
     data$fitted.values,
     data$residuals
   )
 
-  smooth_line_std_resids <- lowess(
+  smooth_line_std_resids <- stats::lowess(
     data$fitted.values,
     data$scale_resids
   )
