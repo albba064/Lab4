@@ -233,9 +233,9 @@ summary.linreg <- function(object, ...) {
   )
 }
 
-# plot <- function(object, ...) {
-#   UseMethod("plot")
-# }
+plot <- function(object, ...) {
+  UseMethod("plot")
+}
 
 #' Plot diagnostic plots for a linreg object
 #'
@@ -264,13 +264,13 @@ plot.linreg <- function(object, ...) {
   )
 
   smooth_line <- stats::lowess(
-    data$fitted.values,
-    data$residuals
+    x = data$fitted.values,
+    y = data$residuals
   )
 
   smooth_line_std_resids <- stats::lowess(
-    data$fitted.values,
-    data$scale_resids
+    x = data$fitted.values,
+    y = data$scale_resids
   )
 
   p1 <- ggplot2::ggplot(
@@ -302,11 +302,14 @@ plot.linreg <- function(object, ...) {
       ),
       color = "red"
     )
-
   print(p1)
   print(p2)
 }
 
+
+
 data(iris)
-model <- linreg(Petal.Length~Sepal.Width + Sepal.Length, iris)
+model <- linreg(Petal.Length ~ Species, iris)
+class(model)
 plot(model)
+methods(class = "linreg")
