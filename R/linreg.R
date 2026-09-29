@@ -305,11 +305,3 @@ plot.linreg <- function(object, ...) {
   print(p1)
   print(p2)
 }
-
-
-
-data(iris)
-model <- linreg(Petal.Length ~ Species, iris)
-class(model)
-plot(model)
-methods(class = "linreg")

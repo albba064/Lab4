@@ -2,7 +2,7 @@
 title: "Lab4"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{introduction}
+  %\VignetteIndexEntry{Lab4}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -19,17 +19,18 @@ knitr::opts_chunk$set(
 ## Install
 You can install with pak::pak.
 ```{r}
-# pak::pak("albba064/Lab4")
+pak::pak("albba064/Lab4")
 ```
 
 ## Linreg
 Fits a linear regression model where the regression coefficients and their variance are calculated using a QR decomposition of the design matrix.
-```{r}
+```{r setup}
 library(Lab4)
+```
+```{r}
 data(iris)
 
-model <- linreg(Petal.Length~Sepal.Width + Sepal.Length, iris)
-
+model <- linreg(Petal.Length ~ Sepal.Width + Sepal.Length, iris)
 ```
 
 ## Print method
@@ -41,7 +42,8 @@ print(model)
 ## Plot method
 Creates diagnostic plots for an object of class $\code{linreg}$. The function produces a Residuals vs Fitted plot and a Scale-Location plot using $\code{ggplot2}$.
 ```{r}
-plot(model)
+plt <- plot(model)
+invisible(NULL)
 ```
 
 ## Resid method
