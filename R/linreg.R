@@ -233,9 +233,9 @@ summary.linreg <- function(object, ...) {
   )
 }
 
-plot <- function(object, ...) {
-  UseMethod("plot")
-}
+# plot <- function(object, ...) {
+#   UseMethod("plot")
+# }
 
 #' Plot diagnostic plots for a linreg object
 #'
@@ -252,14 +252,14 @@ plot <- function(object, ...) {
 #' @export
 plot.linreg <- function(object, ...) {
   std_resids <- object$residuals /
-    sqrt(object$residual_variance)
+    sqrt(object$sigma_squared)
 
   scale_resids <- sqrt(abs(std_resids))
 
   data <- data.frame(
     fitted.values = object$fitted.values,
     residuals = object$residuals,
-    resid_var = object$residual_variance,
+    resid_var = object$sigma_squared,
     scale_resids = scale_resids
   )
 
@@ -306,3 +306,7 @@ plot.linreg <- function(object, ...) {
   print(p1)
   print(p2)
 }
+
+data(iris)
+model <- linreg(Petal.Length~Sepal.Width + Sepal.Length, iris)
+plot(model)
