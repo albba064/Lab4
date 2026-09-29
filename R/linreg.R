@@ -233,10 +233,6 @@ summary.linreg <- function(object, ...) {
   )
 }
 
-plot <- function(object, ...) {
-  UseMethod("plot")
-}
-
 #' Plot diagnostic plots for a linreg object
 #'
 #' Creates diagnostic plots for an object of class \code{linreg}.
