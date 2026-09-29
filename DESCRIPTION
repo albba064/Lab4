@@ -5,8 +5,13 @@ Version: 0.1.0
 Authors@R: c(
     person(
       "Albin", "Bäckström",
-      email = "albba064@student.liu.se,
+      email = "albba064@student.liu.se",
       role = c("aut", "cre")
+    ),
+    person(
+      "Jonatan", "Prepuk", 
+      email = "jonpr189@student.liu.se", 
+      role= c("aut")
     )
   )
 Description: More about what it does (maybe more than one line).
@@ -22,3 +27,4 @@ Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 VignetteBuilder: knitr
+Config/roxygen2/version: 8.1.0

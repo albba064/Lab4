@@ -94,6 +94,8 @@ linreg <- function(formula, data){
   # p-values
   p_values <- 2 * pt(-abs(t_values), df = df)
 
+  # t-values for each coefficient
+  t_val_reg_coef <- coef / sqrt(var_reg_coef)
 
 
   # Create linreg object
@@ -114,8 +116,6 @@ linreg <- function(formula, data){
   class(result) <- "linreg"
 
   return(result)
-
-
 }
 
 #' Print a linreg model
@@ -136,7 +136,6 @@ print.linreg <- function(x, ...){
   print(x$coefficients)
 
   invisible(x)
-
 }
 
 #' Extract residuals
@@ -225,48 +224,77 @@ summary.linreg <- function(object, ...){
     't value' = object$t_value,
     'Pr(>|t|)' = object$p_value
   )
-  print(coef_tab, digits=6)
+  print(coef_tab, digits = 6)
 
-  cat("\nResidual standard error:", format(sqrt(object$sigma_squared), digits=4), "on", object$df, "degrees of freedom")
-
+  cat("\nResidual standard error:", format(sqrt(object$residual_variance), digits = 4), "on", object$df, "degrees of freedom")
 }
 
+#' Plot diagnostic plots for a linreg object
+#'
+#' Creates diagnostic plots for an object of class \code{linreg}.
+#' The function produces a Residuals vs Fitted plot and a
+#' Scale-Location plot using \code{ggplot2}.
+#'
+#' @param object An object of class \code{linreg}.
+#'
+#' @examples
+#' model <- linreg(Petal.Length ~ Species, data = iris)
+#' plot(model)
+#'
+#' @export
+plot.linreg <- function(object) {
+  std_resids <- object$residuals /
+    sqrt(object$residual_variance)
 
-# fix plot method
-plot.linreg <- function(object, ...){
-  # fix ggplot2 load
-  library(ggplot2)
-  data <- data.frame(fitted.values = object$fitted.values, residuals = object$residuals, medi = median(object$residuals))
-  smooth_line = lowess()
-  ggplot(data, aes(x = fitted.values, y = residuals)) +
-    geom_point() +
-    geom_smooth(method = "lowess", group = 1) +
-    geom_hline(yintercept = 0, linetype = "dashed")
-    # + ylim(min(data$residuals), max(data$residuals))
+  scale_resids <- sqrt(abs(std_resids))
+
+  data <- data.frame(
+    fitted.values = object$fitted.values,
+    residuals = object$residuals,
+    resid_var = object$residual_variance,
+    scale_resids = scale_resids
+  )
+
+  smooth_line <- lowess(
+    data$fitted.values,
+    data$residuals
+  )
+
+  smooth_line_std_resids <- lowess(
+    data$fitted.values,
+    data$scale_resids
+  )
+
+  p1 <- ggplot2::ggplot(
+    data,
+    ggplot2::aes(x = fitted.values, y = residuals)
+  ) +
+    ggplot2::geom_point() +
+    ggplot2::geom_line(
+      data = data.frame(
+        fitted.values = smooth_line$x,
+        residuals = smooth_line$y
+      ),
+      color = "red"
+    ) +
+    ggplot2::geom_hline(
+      yintercept = 0,
+      linetype = "dashed"
+    )
+
+  p2 <- ggplot2::ggplot(
+    data,
+    ggplot2::aes(x = fitted.values, y = scale_resids)
+  ) +
+    ggplot2::geom_point() +
+    ggplot2::geom_line(
+      data = data.frame(
+        fitted.values = smooth_line_std_resids$x,
+        scale_resids = smooth_line_std_resids$y
+      ),
+      color = "red"
+    )
+
+  print(p1)
+  print(p2)
 }
-
-
-test <- linreg(Petal.Length~Species, iris)
-
-data = data.frame(x = test$fitted.values, y = test$residuals)
-print(test)
-# pred(test)
-coef(test)
-resid(test)
-plot(test)
-summary(test)
-library(ggplot2)
-ggplot(data = data, aes(x = x, y = y)) + geom_point() + geom_smooth(formula = )
-plot(test, 1)
-lm_test <- lm(Petal.Length~Species, iris)
-lm_test$residuals |> summary()
-
-par(mfrow = c(1, 1))
-plot(lm_test, 1)
-lines(lowess(lm_test$fitted.values, lm_test$residuals), col = "blue", lt = 2)
-
-plot(lm_test$fitted.values, lm_test$residuals)
-lines(lowess(lm_test$fitted.values, lm_test$residuals), col = "red")
-abline(h = 0, lty = 3, col = "gray")
-
-lowess()
