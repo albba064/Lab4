@@ -1,42 +1,116 @@
-linreg <- function(formula, data) {
-  matrix_X <- model.matrix(formula, data)
-  dependent_Y <- data[, all.vars(formula)[1]]
+#' Linear regression model
+#'
+#' Fits a linear regression model where the regression coefficients and their variance
+#' are calculated using a QR decomposition of the design matrix.
+#'
+#' @param formula A formula describing the regression model.
+#' @param data A data frame containing the variables used in the model.
+#'
+#' @return An object of class \code{linreg} containing the following elements:
+#' \describe{
+#' \item{call}{The function call used to fit the model.}
+#' \item{coefficients}{A named vector containing the estimated regression coefficients.}
+#' \item{fitted.values}{A vector containing the fitted values.}
+#' \item{residuals}{A vector containing the residuals.}
+#' \item{df}{The residual degrees of freedom.}
+#' \item{sigma_squared}{The estimated residual variance.}
+#' \item{var_beta_hat}{The variance-covariance matrix of the estimated regression coefficients.}
+#' \item{var_coefficients}{The estimated variance of each regression coefficient.}
+#' \item{standard_errors}{The standard errors of the estimated regression coefficients.}
+#' \item{t_values}{The t-statistics for the regression coefficients.}
+#' \item{p_values}{The two-sided p-values for the regression coefficients.}
+#' }
+#'
+#'@export
+linreg <- function(formula, data){
 
-  # Regressions coefficients
-  coef <- drop(solve(crossprod(matrix_X)) %*% t(matrix_X) %*% dependent_Y)
+  X <- model.matrix(formula, data)
+  y <- data[, all.vars(formula)[1]]
+
+  n <- nrow(X)
+  p <- ncol(X)
+
+  #-----------------------------------------------
+  # QR-decomposition, using Gram-Schmidt
+  #-----------------------------------------------
+  X_temp <- X  # Temporary copy of X which will be updated by the algorithm
+  Q <- matrix(0, nrow = n, ncol = p)
+  R <- matrix(0, nrow = p, ncol = p)
+
+  for (j in 1:p) {
+
+    # Length of current column
+    R[j, j] <- sqrt(sum(X_temp[, j]^2))
+
+    # Normalize current column
+    Q[, j] <- X_temp[, j] / R[j, j]
+
+    if (j < p) {
+      for (k in (j + 1):p) {
+
+        # Projection of column k onto Q[, j]
+        R[j, k] <- sum(Q[, j] * X_temp[, k])
+
+        # Remove projection
+        X_temp[, k] <- X_temp[, k] - Q[, j] * R[j, k]
+      }
+    }
+  }
+
+  #-----------------------------------------------
+  # Calculate regression coefficients w. QR
+  #-----------------------------------------------
+  beta_hat <- drop(solve(R) %*% t(Q) %*% y)
+  names(beta_hat) <- colnames(X)
+  #-----------------------------------------------
 
   # Fitted values
-  y_fit <- matrix_X %*% coef
+  fitted_values <- X %*% beta_hat
 
   # Residuals
-  res <- dependent_Y - y_fit
+  residuals <- y - fitted_values
 
   # Degrees of freedom df
-  df <- length(dependent_Y) - ncol(matrix_X)
+  df <- n - p
 
   # Residual variance
-  residual_variance <- (crossprod(res) / df)[[1]]
+  sigma_squared <- sum(residuals^2) / df
 
-  # Variance of the regression coefficients
-  var_reg_coef <- residual_variance * diag(solve(crossprod(matrix_X)))
+  #-----------------------------------------------
+  # Vcov. matrix of beta_hat
+  #-----------------------------------------------
+  var_beta_hat <- sigma_squared * solve(R) %*% t(solve(R))
+  #-----------------------------------------------
+
+  # Variance of regrission coefficients
+  var_coefficients <- diag(var_beta_hat)
+
+  # Standard errors
+  standard_errors <- sqrt(var_coefficients)
+
+  # t-values
+  t_values <- beta_hat / standard_errors
+
+  # p-values
+  p_values <- 2 * pt(-abs(t_values), df = df)
 
   # t-values for each coefficient
   t_val_reg_coef <- coef / sqrt(var_reg_coef)
 
-  # p-values for each coefficient
-  p_val_reg_coef <- 2 * pt(-abs(t_val_reg_coef), df = df)
 
   # Create linreg object
   result <- list(
     call = match.call(),
-    coefficients = coef,
-    fitted.values = y_fit,
-    residuals = res,
+    coefficients = beta_hat,
+    fitted.values = fitted_values,
+    residuals = residuals,
     df = df,
-    residual_variance = residual_variance,
-    var_coefficients = var_reg_coef,
-    t_values = t_val_reg_coef,
-    p_values = p_val_reg_coef
+    sigma_squared = sigma_squared,
+    var_beta_hat = var_beta_hat,
+    var_coefficients = var_coefficients,
+    standard_errors = standard_errors,
+    t_values = t_values,
+    p_values = p_values
   )
 
   class(result) <- "linreg"
@@ -44,7 +118,17 @@ linreg <- function(formula, data) {
   return(result)
 }
 
-print.linreg <- function(x, ...) {
+#' Print a linreg model
+#'
+#' Prints the function call and estimated regression coefficients from a \code{linreg} object.
+#'
+#' @param x An object of class \code{linreg}.
+#' @param ... Additional arguments.
+#'
+#' @return The \code{linreg} object
+#'
+#' @export
+print.linreg <- function(x, ...){
   cat("Call:\n")
   print(x$call)
 
@@ -54,11 +138,79 @@ print.linreg <- function(x, ...) {
   invisible(x)
 }
 
-summary.linreg <- function(object, ...) {
-  coefficients <- object$coefficients
-  standard_error <- sqrt(object$var_coefficients)
-  t_value <- object$t_values
-  p_value <- object$p_value
+#' Extract residuals
+#'
+#' Extracts the residuals from a \code{linreg} object.
+#'
+#' @param object An object of class \code{linreg}.
+#' @param ... Additional arguments.
+#'
+#' @return A numeric vector containing the residuals.
+#'
+#' @export
+resid.linreg <- function(object, ...){
+  return((object$residuals))
+}
+
+
+
+#' Extract predicted values
+#'
+#' Generic function for extracting predicted values from a model.
+#'
+#' @param object A model object.
+#' @param ... Additional arguments.
+#'
+#' @return The predicted values.
+#'
+#' @export
+pred <- function(object, ...){
+  UseMethod("pred")
+}
+
+#' Extract predicted values from a linreg model
+#'
+#' Extracts the fitted values from a \code{linreg} object.
+#'
+#' @param object An object of class \code{linreg}.
+#' @param ... Additional arguments.
+#'
+#' @return A numeric vector containing the fitted values, with class
+#'   \code{pred}.
+#'
+#' @export
+pred.linreg <- function(object, ...) {
+  object$fitted.values
+}
+
+#' Extract regression coefficients
+#'
+#' Extracts the estimated regression coefficients from a \code{linreg} object.
+#'
+#' @param object An object of class \code{linreg}.
+#' @param ... Additional arguments.
+#'
+#' @return A named numeric vector containing the estimated regression coefficients.
+#' @export
+
+coef.linreg <- function(object, ...) {
+  object$coefficients
+}
+
+
+#' Summarize a linreg model
+#'
+#' Prints a summary of a \code{linreg} object, including the estimated regression coefficients, standard errors,
+#' t-statistics, p-values, residual standard error, and residual degrees of freedom.
+#'
+#' @param object An object of class \code{linreg}.
+#' @param ... Additional arguments.
+#'
+#' @return The \code{linreg} object, invisibly.
+#'
+#' @export
+
+summary.linreg <- function(object, ...){
 
   # Print the function call
   cat("Call:\n")
@@ -67,42 +219,14 @@ summary.linreg <- function(object, ...) {
   cat("\nCoefficients:\n")
   # Create a table for coefficients, similar to summary.lm() output
   coef_tab <- cbind(
-    Estimate = coefficients,
-    "Std. Error" = standard_error,
-    "t value" = t_value,
-    "Pr(>|t|)" = p_value
+    Estimate = object$coefficients,
+    'Std. Error' = object$standard_errors,
+    't value' = object$t_value,
+    'Pr(>|t|)' = object$p_value
   )
   print(coef_tab, digits = 6)
 
   cat("\nResidual standard error:", format(sqrt(object$residual_variance), digits = 4), "on", object$df, "degrees of freedom")
-  # result <- list(
-  #   call = object$call,
-  #   coefficients = coef_tab,
-  #   df = object$df,
-  #   residual_variance = object$residual_variance
-  # )
-  # class(result) <- "summary.linreg"
-  # return(result)
-}
-
-# Create pred.linreg
-pred <- function(object, ...) {
-  UseMethod("pred")
-}
-pred.linreg <- function(object) {
-  result <- drop(object$fitted.values)
-  class(result) <- "pred"
-  return(result)
-}
-
-# function returns coefficients as named vector
-coef.linreg <- function(object, ...) {
-  return(object$coefficients)
-}
-
-# function returns residual vector
-resid.linreg <- function(object, ...) {
-  return(drop(object$residuals))
 }
 
 #' Plot diagnostic plots for a linreg object
@@ -112,14 +236,13 @@ resid.linreg <- function(object, ...) {
 #' Scale-Location plot using \code{ggplot2}.
 #'
 #' @param object An object of class \code{linreg}.
-#' @param ... Aditional arguments. Currently not used.
 #'
 #' @examples
 #' model <- linreg(Petal.Length ~ Species, data = iris)
 #' plot(model)
 #'
 #' @export
-plot.linreg <- function(object, ...) {
+plot.linreg <- function(object) {
   std_resids <- object$residuals /
     sqrt(object$residual_variance)
 
