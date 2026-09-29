@@ -4,10 +4,10 @@
 \alias{plot.linreg}
 \title{Plot diagnostic plots for a linreg object}
 \usage{
-\method{plot}{linreg}(object, ...)
+\method{plot}{linreg}(x, ...)
 }
 \arguments{
-\item{object}{An object of class \code{linreg}.}
+\item{x}{An object of class \code{linreg}.}
 
 \item{...}{Additional arguments.}
 }

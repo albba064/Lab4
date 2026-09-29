@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 
 ## Install
 You can install with pak::pak.
-```{r}
+```{r eval=FALSE, include=FALSE}
 pak::pak("albba064/Lab4")
 ```
 

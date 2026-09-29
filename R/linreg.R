@@ -239,23 +239,23 @@ summary.linreg <- function(object, ...) {
 #' The function produces a Residuals vs Fitted plot and a
 #' Scale-Location plot using \code{ggplot2}.
 #'
-#' @param object An object of class \code{linreg}.
+#' @param x An object of class \code{linreg}.
 #' @param ... Additional arguments.
 #'
 #' @import ggplot2
 #' @import stats
 #'
 #' @export
-plot.linreg <- function(object, ...) {
-  std_resids <- object$residuals /
-    sqrt(object$sigma_squared)
+plot.linreg <- function(x, ...) {
+  std_resids <- x$residuals /
+    sqrt(x$sigma_squared)
 
   scale_resids <- sqrt(abs(std_resids))
 
   data <- data.frame(
-    fitted.values = object$fitted.values,
-    residuals = object$residuals,
-    resid_var = object$sigma_squared,
+    fitted.values = x$fitted.values,
+    residuals = x$residuals,
+    resid_var = x$sigma_squared,
     scale_resids = scale_resids
   )
 
