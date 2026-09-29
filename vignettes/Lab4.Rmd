@@ -8,7 +8,7 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(
+knitr::opts_chunk_set(
   collapse = TRUE,
   comment = "#>"
 )
@@ -18,13 +18,13 @@ knitr::opts_chunk$set(
 
 ## Install
 You can install with pak::pak.
-```{r eval=FALSE, include=FALSE}
+```{r eval=FALSE, include=TRUE}
 pak::pak("albba064/Lab4")
 ```
 
 ## Linreg
 Fits a linear regression model where the regression coefficients and their variance are calculated using a QR decomposition of the design matrix.
-```{r setup}
+```{r setup, message=FALSE}
 library(Lab4)
 ```
 ```{r}
@@ -34,38 +34,38 @@ model <- linreg(Petal.Length ~ Sepal.Width + Sepal.Length, iris)
 ```
 
 ## Print method
-Prints the function call and estimated regression coefficients from a $\code{linreg}$ object.
+Prints the function call and estimated regression coefficients from a \code{linreg} object.
 ```{r}
 print(model)
 ```
 
 ## Plot method
-Creates diagnostic plots for an object of class $\code{linreg}$. The function produces a Residuals vs Fitted plot and a Scale-Location plot using $\code{ggplot2}$.
-```{r}
-plt <- plot(model)
-invisible(NULL)
+Creates diagnostic plots for an object of class \code{linreg}. The function produces a Residuals vs Fitted plot and a Scale-Location plot using
+\code{ggplot2} .
+```{r message=FALSE}
+plot(model)
 ```
 
 ## Resid method
-Extracts the residuals from a $\code{linreg}$ object. Returns $\hat{e}$
+Extracts the residuals from a \code{linreg} object. Returns \hat{e}.
 ```{r}
-resid(model)
+resid(model) |> head(20) |> drop() 
 ```
 
 ## Pred method
-Extracts the fitted values from a $\code{linreg}$ object.
+Extracts the fitted values from a \code{linreg} object.
 ```{r}
-pred(model)
+pred(model) |> head(20) |> drop() 
 ```
 
 ## Coef method
-Extracts the estimated regression coefficients from a $\code{linreg}$ object.
+Extracts the estimated regression coefficients from a \code{linreg} object.
 ```{r}
 coef(model)
 ```
 
 ## Summary method
-Prints a summary of a $\code{linreg}$ object, including the estimated regression coefficients, standard errors, t-statistics, p-values, residual standard error, and residual degrees of freedom.
+Prints a summary of a \code{linreg} object, including the estimated regression coefficients, standard errors, t-statistics, p-values, residual standard error, and residual degrees of freedom.
 ```{r}
 summary(model)
 ```
