@@ -18,8 +18,8 @@ knitr::opts_chunk$set(
 
 ## Install
 You can install with pak::pak.
-```{r setup}
-pak::pak("albba064/Lab4")
+```{r}
+# pak::pak("albba064/Lab4")
 ```
 
 ## Linreg

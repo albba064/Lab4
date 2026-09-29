@@ -135,10 +135,6 @@ print.linreg <- function(x, ...) {
   invisible(x)
 }
 
-resid <- function(object, ...) {
-  UseMethod("resid")
-}
-
 #' Extract residuals
 #'
 #' Extracts the residuals from a \code{linreg} object.
@@ -237,9 +233,9 @@ summary.linreg <- function(object, ...) {
   )
 }
 
-# plot <- function(object, ...) {
-#   UseMethod("plot")
-# }
+plot <- function(object, ...) {
+  UseMethod("plot")
+}
 
 #' Plot diagnostic plots for a linreg object
 #'
