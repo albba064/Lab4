@@ -57,6 +57,12 @@ theme <- function(base_size = 10) {
       margin = ggplot2::margin(t = 5),
       size = base_size
     ),
+    axis.text.x = ggplot2::element_text(
+      size = base_size * 0.9
+    ),
+    axis.text.y = ggplot2::element_text(
+      size = base_size * 0.9
+    ),
     legend.position = "right",
     legend.title = ggplot2::element_text(
       size = base_size * 0.9,
@@ -81,7 +87,7 @@ theme <- function(base_size = 10) {
   )
   logo_path <- system.file("logos", "liu_sec.png", package = "Lab4")
   png <- png::readPNG(logo_path, native = TRUE) #|>
-   # grid::rasterGrob()
+  # grid::rasterGrob()
 
   grob <- grid::rasterGrob(
     png,

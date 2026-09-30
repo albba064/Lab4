@@ -82,33 +82,18 @@ plot(model) + theme()
 ```
 
 ```{r}
-library(ggplot2)
 data(mtcars)
 
-plt <- ggplot(
+ggplot2::ggplot(
   mtcars,
-  aes(
+  ggplot2::aes(
     wt,
     mpg,
-    colour = factor(cyl),
     shape = factor(vs)
   )
 ) +
-  geom_point(size = 3) +
-  geom_smooth(
-    method = "lm",
-    se = FALSE
-  ) +
-  labs(
-    title = "Fuel Efficiency by Vehicle Weight",
-    subtitle = "Relationship between weight, cylinder count and engine type",
-    x = "Vehicle weight (1000 lbs)",
-    y = "Fuel efficiency (mpg)",
-    colour = "Number of cylinders",
-    shape = "Engine configuration",
-    caption = "Source: mtcars dataset"
-  ) +
-  theme()
-
-plt
+  ggplot2::geom_point() +
+  ggplot2::labs(
+    title = "Fuel Efficiency by Vehicle Weight"
+  ) + theme(base_size = 3)
 ```
