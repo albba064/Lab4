@@ -49,13 +49,17 @@ plot(model)
 ## Resid method
 Extracts the residuals from a \code{linreg} object. Returns \hat{e}.
 ```{r}
-resid(model) |> head(20) |> drop() 
+resid(model) |>
+  head(20) |>
+  drop()
 ```
 
 ## Pred method
 Extracts the fitted values from a \code{linreg} object.
 ```{r}
-pred(model) |> head(20) |> drop() 
+pred(model) |>
+  head(20) |>
+  drop()
 ```
 
 ## Coef method
@@ -68,4 +72,43 @@ coef(model)
 Prints a summary of a \code{linreg} object, including the estimated regression coefficients, standard errors, t-statistics, p-values, residual standard error, and residual degrees of freedom.
 ```{r}
 summary(model)
+```
+
+## Theme 
+Applies LiU theme with LiU colors and LiU logo to a ggplot2. 
+
+```{r}
+plot(model) + theme()
+```
+
+```{r}
+library(ggplot2)
+data(mtcars)
+
+plt <- ggplot(
+  mtcars,
+  aes(
+    wt,
+    mpg,
+    colour = factor(cyl),
+    shape = factor(vs)
+  )
+) +
+  geom_point(size = 3) +
+  geom_smooth(
+    method = "lm",
+    se = FALSE
+  ) +
+  labs(
+    title = "Fuel Efficiency by Vehicle Weight",
+    subtitle = "Relationship between weight, cylinder count and engine type",
+    x = "Vehicle weight (1000 lbs)",
+    y = "Fuel efficiency (mpg)",
+    colour = "Number of cylinders",
+    shape = "Engine configuration",
+    caption = "Source: mtcars dataset"
+  ) +
+  theme()
+
+plt
 ```
