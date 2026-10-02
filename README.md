@@ -19,3 +19,8 @@ You can install the development version of Lab4 from
 # install.packages("pak")
 pak::pak("albba064/Lab4")
 ```
+Or if you want to build vignettes:
+
+```r
+devtools::install_github("albba064/Lab4", build_vignettes = TRUE)
+```
