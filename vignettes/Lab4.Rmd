@@ -77,11 +77,11 @@ summary(model)
 ## Theme 
 Applies LiU theme with LiU colors and LiU logo to a ggplot2. 
 
-```{r}
+```{r fig.width=6, fig.height=5}
 plot(model) + theme()
 ```
 
-```{r}
+```{r fig.width=6, fig.height=5}
 data(mtcars)
 
 ggplot2::ggplot(
@@ -89,11 +89,13 @@ ggplot2::ggplot(
   ggplot2::aes(
     wt,
     mpg,
-    shape = factor(vs)
+    shape = factor(vs),
+    color = factor(vs)
   )
 ) +
   ggplot2::geom_point() +
   ggplot2::labs(
     title = "Fuel Efficiency by Vehicle Weight"
-  ) + theme(base_size = 3)
+  ) +
+  theme(base_size = 3)
 ```
