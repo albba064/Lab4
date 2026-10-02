@@ -14,7 +14,7 @@ Authors@R: c(
       role= c("aut")
     )
   )
-Description: A package for linear regression including a ggplo2 LiU theme.
+Description: A package for linear regression including a ggplot2 LiU theme.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
