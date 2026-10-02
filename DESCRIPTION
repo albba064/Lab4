@@ -1,6 +1,6 @@
 Package: Lab4
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Linear Regression Package
 Version: 0.1.0
 Authors@R: c(
     person(
@@ -14,7 +14,7 @@ Authors@R: c(
       role= c("aut")
     )
   )
-Description: More about what it does (maybe more than one line).
+Description: A package for linear regression including a ggplo2 LiU theme.
     Continuation lines should be indented.
 License: MIT + file LICENSE
 Encoding: UTF-8
