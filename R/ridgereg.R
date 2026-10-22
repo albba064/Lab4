@@ -177,9 +177,8 @@ model <- ridgereg(
   lambda = 1
 )
 
-coef(model)
 predict(model)
-
+coef(model)
 length(Petal.Length ~ Sepal.Length + Sepal.Width)
 
 # MASS Ridge regression
@@ -189,4 +188,4 @@ reference <- MASS::lm.ridge(
   lambda = 1
 )
 
-print(model)
+coef(reference)
