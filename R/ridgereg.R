@@ -1,6 +1,50 @@
-# TODO add documentation
+#' Fit Ridge Regression Using QR Decomposition
+#'
+#' @description
+#' Fits a ridge regression model using a QR decomposition based on
+#' modified Gram-Schmidt orthogonalization. The explanatory variables
+#' are standardized before fitting, and the estimated coefficients
+#' are transformed back to their original scale.
+#'
+#' @param formula A formula specifying the response and explanatory variables.
+#' @param data A data frame containing the variables in the formula.
+#' @param lambda A non-negative numeric value specifying the
+#'   regularization strength.
+#'
+#' @return An object of class \code{ridgereg} containing:
+#' \describe{
+#'   \item{call}{The matched function call.}
+#'   \item{coefficients}{Estimated regression coefficients on the original scale.}
+#'   \item{fitted.values}{Predicted values for the training data.}
+#'   \item{formula}{The model formula.}
+#'   \item{lambda}{The regularization parameter.}
+#'   \item{x_mean}{Means of the explanatory variables.}
+#'   \item{x_sd}{Standard deviations of the explanatory variables.}
+#' }
+#'
+#' @examples
+#' model <- ridgereg(
+#'   Petal.Length ~ Sepal.Length + Sepal.Width,
+#'   data = iris,
+#'   lambda = 1
+#' )
+#'
+#' print(model)
+#' coef(model)
+#'
+#' @export
 ridgereg <- function(formula, data, lambda) {
-  # TODO input check.
+  stopifnot(
+    "formula must be a formula object." = class(formula) == "formula",
+    "formula must contain a response and at least one predictor." = length(formula) == 3,
+    "data must be a data.frame" = is.data.frame(data),
+    "data cannot be empty" = nrow(data) > 0,
+    "lambda must be a numeric" = is.numeric(lambda),
+    "lambda must be finite" = is.finite(lambda),
+    "lambda must be of lenght one" = length(lambda) == 1,
+    "lambda must be a non-negative numeric" = lambda >= 0
+  )
+
 
   X <- stats::model.matrix(formula, data)
   X_norm <- X
@@ -49,7 +93,7 @@ ridgereg <- function(formula, data, lambda) {
   coefficients <- c(beta_0, beta_1)
   names(coefficients) <- colnames(X)
 
-  fitted_values <- X %*% coefficients
+  fitted_values <- c(X %*% coefficients)
 
   model <- list(
     call = match.call(),
@@ -65,6 +109,14 @@ ridgereg <- function(formula, data, lambda) {
   return(model)
 }
 
+#' Print a Ridge Regression Model
+#'
+#' @param x An object of class `ridgereg`.
+#' @param ... Additional arguments (not used).
+#'
+#' @return Invisibly returns the `ridgereg` object.
+#'
+#' @export
 print.ridgereg <- function(x, ...) {
   cat("Call:\n")
   print(x$call)
@@ -73,16 +125,49 @@ print.ridgereg <- function(x, ...) {
   invisible(x)
 }
 
-predict.ridgereg <- function() {
-  # TODO
+#' Predict Values Using Ridge Regression
+#'
+#' @param object An object of class `ridgereg`.
+#' @param newdata Optional data frame containing new observations.
+#' @param ... Additional arguments (not used).
+#'
+#' @return A numeric vector of predicted values.
+#'
+#' @export
+predict.ridgereg <- function(object, newdata, ...) {
+  if (missing(newdata)) {
+    return(object$fitted.values)
+  }
+
+  stopifnot(
+    "newdata must be a data.frame" = is.data.frame(newdata),
+    "newdata connot be an empty data.frame" = nrow(newdata)
+  )
+
+  predictors <- stats::delete.response(
+    stats::terms(object$formula)
+  )
+
+  X_new <- stats::model.matrix(predictors, newdata)
+
+  y_new <- X_new %*% object$coefficients
+  return(drop(y_new))
 }
 
-coef.ridgereg <- function() {
-  # TODO
+#' Extract Ridge Regression Coefficients
+#'
+#' @param object An object of class `ridgereg`.
+#' @param ... Additional arguments (not used).
+#'
+#' @return A named numeric vector of regression coefficients.
+#'
+#' @export
+coef.ridgereg <- function(object, ...) {
+  return(object$coefficients)
 }
 
 
-# Kod för att testa 
+# Kod för att testa
 
 data(iris)
 
@@ -91,6 +176,11 @@ model <- ridgereg(
   data = iris,
   lambda = 1
 )
+
+coef(model)
+predict(model)
+
+length(Petal.Length ~ Sepal.Length + Sepal.Width)
 
 # MASS Ridge regression
 reference <- MASS::lm.ridge(
