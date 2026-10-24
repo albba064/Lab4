@@ -102,7 +102,8 @@ ridgereg <- function(formula, data, lambda) {
     formula = formula,
     lambda = lambda,
     x_mean = x_mean,
-    x_sd = x_sd
+    x_sd = x_sd,
+    terms_obj = stats::terms(formula, data = data)
   )
 
   class(model) <- "ridgereg"
@@ -141,12 +142,10 @@ predict.ridgereg <- function(object, newdata, ...) {
 
   stopifnot(
     "newdata must be a data.frame" = is.data.frame(newdata),
-    "newdata connot be an empty data.frame" = nrow(newdata)
+    "newdata cannot be an empty data.frame" = nrow(newdata) > 0  # fixed what were testing
   )
 
-  predictors <- stats::delete.response(
-    stats::terms(object$formula)
-  )
+  predictors <- stats::delete.response(object$terms)
 
   X_new <- stats::model.matrix(predictors, newdata)
 
@@ -188,4 +187,5 @@ reference <- MASS::lm.ridge(
   lambda = 1
 )
 
+reference$coef
 coef(reference)
