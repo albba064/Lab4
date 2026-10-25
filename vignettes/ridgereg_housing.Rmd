@@ -1,0 +1,166 @@
+---
+title: "ridgereg_housing"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{my-vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(Lab4)
+```
+
+# Divide the BostonHousing data into a test and training dataset using the caret package.
+```{r, message=FALSE, warning=FALSE}
+library(caret)
+data("BostonHousing", package = "mlbench")
+
+set.seed(123)
+train_index <- createDataPartition(BostonHousing$medv, p = 0.80, list = FALSE)
+
+train_boston <- BostonHousing[train_index, ]
+test_boston <- BostonHousing[-train_index, ]
+
+```
+
+# Fit a linear regression model and a fit a linear regression model with forward selection of covariates on the training dataset.
+
+## Linear regression model
+```{r}
+set.seed(123)
+linreg_mod1 <- train(medv~., data = train_boston, method = "lm")
+```
+
+## Linear regression model with forward selection 
+
+NOTE: Not sure about this solution, the built-in 'leapForward' method in caret requrires at least one covariate. Might have to create a 
+custom function but...
+```{r}
+null_model <- lm(medv~1, data = train_boston)
+forward_linreg <- train(medv~1 + ., data = train_boston, 
+                        method = "leapForward", 
+                        tuneGrid = expand.grid(nvmax = 0:(ncol(train_boston)-1)),
+                        trControl = trainControl(method = "cv",number = 10), metric = "RMSE")
+
+summary(forward_linreg)
+```
+
+# Evaluate the performance of this model on the training dataset.
+
+The full linear model and forward selection model perform similarly. 
+```{r}
+pred_lm <- predict(linreg_mod1, newdata = train_boston)
+pred_null <- predict(null_model)
+pred_forward <- predict(forward_linreg$finalModel, newdata = train_boston)
+
+knitr::kable(rbind(postResample(pred_lm, train_boston$medv),
+postResample(pred_null, train_boston$medv),
+postResample(pred_forward, train_boston$medv)), col.names = c("LM model", "Intercept-only", "Forward Selection"))
+```
+
+#  Fit a ridge regression model using your ridgereg() function to the training dataset for different values of lambda
+
+## Create custom model for ridge regression 
+```{r}
+ridge_caret <- list(
+  label = "Custom Ridge Regression",
+  library = NULL,
+  type = "Regression",
+  
+  parameters = data.frame(
+    parameter = "lambda",
+    class = "numeric",
+    label = "Lambda"
+  ),
+  
+  grid = function(x, y, len = NULL, search = "grid") {
+    data.frame(
+      lambda = 10^seq(-3, 3, length.out = len)
+    )
+  },
+  
+  fit = function(x, y, wts, param, lev, last, classProbs, ...) {
+    
+    dat <- data.frame(.outcome = y, x)
+    
+    ridgereg(
+      formula = .outcome ~ .,
+      data = dat,
+      lambda = param$lambda
+    )
+  },
+  
+  predict = function(modelFit, newdata, submodels = NULL) {
+    newdata <- as.data.frame(newdata)
+    predict(modelFit, newdata = newdata)
+  },
+  
+  prob = NULL
+)
+```
+
+## Fit the model over grid of different lambda
+```{r}
+lambda_grid <- expand.grid(
+  lambda = c(0, 0.001, 0.01, 0.1, 1, 10, 100, 1000)
+)
+
+set.seed(123)
+ridge_model <- train(
+  x = train_boston[, names(train_boston) != "medv"],
+  y = train_boston$medv,
+  method = ridge_caret,
+  tuneGrid = lambda_grid,
+  trControl = trainControl(
+    method = "cv",
+    number = 10
+  ),
+  metric = "RMSE"
+)
+```
+
+
+# Find the best hyperparameter value for lambda using 10-fold cross-validation on the training set
+```{r}
+set.seed(123)
+lambda_grid <- expand.grid(
+  lambda = seq(from = 1e-3, to = 1e2, by = 1e-1)
+)
+ridge_model_2 <- train(
+  x = train_boston[, names(train_boston) != "medv"],
+  y = train_boston$medv,
+  method = ridge_caret,
+  tuneGrid = lambda_grid,
+  trControl = trainControl(
+    method = "cv",
+    number = 10
+  ),
+  metric = "RMSE"
+)
+pred_ridge <- predict(ridge_model_2, newdata = train_boston)
+paste0("Best lambda: ", ridge_model_2$bestTune)
+postResample(
+  pred = pred_ridge,
+  obs = train_boston$medv
+)
+```
+
+# Evaluate the performance of all three models on the test dataset and write some concluding comments.
+
+Conclusion: forward selection model appears to give the best RMSE. The normal lm model and ridge regesssion model both preform very similarly. 
+```{r}
+lm_test <- predict(linreg_mod1, newdata = test_boston) %>% postResample(obs = test_boston$medv)
+forward_test <- predict(forward_linreg, newdata = test_boston) %>% postResample(obs = test_boston$medv)
+ridge_test <- predict(ridge_model_2, newdata = test_boston) %>% postResample(obs = test_boston$medv)
+
+knitr::kable(data.frame(rbind(lm_test, forward_test, ridge_test)))
+```
+
