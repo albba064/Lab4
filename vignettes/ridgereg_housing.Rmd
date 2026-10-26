@@ -24,7 +24,7 @@ library(caret)
 data("BostonHousing", package = "mlbench")
 
 set.seed(123)
-train_index <- createDataPartition(BostonHousing$medv, p = 0.80, list = FALSE)
+train_index <- createDataPartition(BostonHousing$medv, p = 0.8, list = FALSE)
 
 train_boston <- BostonHousing[train_index, ]
 test_boston <- BostonHousing[-train_index, ]
@@ -42,24 +42,27 @@ linreg_mod1 <- train(medv~., data = train_boston, method = "lm")
 ## Linear regression model with forward selection 
 
 NOTE: Not sure about this solution, the built-in 'leapForward' method in caret requrires at least one covariate. Might have to create a 
-custom function but...
+custom function but... 
 ```{r}
 null_model <- lm(medv~1, data = train_boston)
 forward_linreg <- train(medv~1 + ., data = train_boston, 
                         method = "leapForward", 
-                        tuneGrid = expand.grid(nvmax = 0:(ncol(train_boston)-1)),
+                        tuneGrid = expand.grid(nvmax = 1:(ncol(train_boston)-1)),
                         trControl = trainControl(method = "cv",number = 10), metric = "RMSE")
 
 summary(forward_linreg)
+
 ```
+
+Best model had `r forward_linreg$bestTune$nvmax` covariates
 
 # Evaluate the performance of this model on the training dataset.
 
-The full linear model and forward selection model perform similarly. 
+The full linear model and forward selection model perform similarly on training data. 
 ```{r}
 pred_lm <- predict(linreg_mod1, newdata = train_boston)
 pred_null <- predict(null_model)
-pred_forward <- predict(forward_linreg$finalModel, newdata = train_boston)
+pred_forward <- predict(forward_linreg, newdata = train_boston)
 
 knitr::kable(rbind(postResample(pred_lm, train_boston$medv),
 postResample(pred_null, train_boston$medv),
@@ -132,7 +135,7 @@ ridge_model <- train(
 ```{r}
 set.seed(123)
 lambda_grid <- expand.grid(
-  lambda = seq(from = 1e-3, to = 1e2, by = 1e-1)
+  lambda = seq(from = 1e-2, to = 1e1, by = 1e-2)
 )
 ridge_model_2 <- train(
   x = train_boston[, names(train_boston) != "medv"],
@@ -155,7 +158,8 @@ postResample(
 
 # Evaluate the performance of all three models on the test dataset and write some concluding comments.
 
-Conclusion: forward selection model appears to give the best RMSE. The normal lm model and ridge regesssion model both preform very similarly. 
+Conclusion: forward selection model appears to give the best RMSE (and Rsquared & MAE), though differences between the models' results are small. The normal lm model and ridge regesssion model both preform very similarly.  
+Overall,the predictive performance of all the models is satisfactory. 
 ```{r}
 lm_test <- predict(linreg_mod1, newdata = test_boston) %>% postResample(obs = test_boston$medv)
 forward_test <- predict(forward_linreg, newdata = test_boston) %>% postResample(obs = test_boston$medv)
