@@ -164,28 +164,3 @@ predict.ridgereg <- function(object, newdata, ...) {
 coef.ridgereg <- function(object, ...) {
   return(object$coefficients)
 }
-
-
-# Kod för att testa
-
-data(iris)
-
-model <- ridgereg(
-  Petal.Length ~ Sepal.Length + Sepal.Width,
-  data = iris,
-  lambda = 1
-)
-
-predict(model)
-coef(model)
-length(Petal.Length ~ Sepal.Length + Sepal.Width)
-
-# MASS Ridge regression
-reference <- MASS::lm.ridge(
-  Petal.Length ~ Sepal.Length + Sepal.Width,
-  data = iris,
-  lambda = 1
-)
-
-reference$coef
-coef(reference)
