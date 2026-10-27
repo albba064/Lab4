@@ -21,13 +21,20 @@ LazyData: true
 URL: https://github.com/albba064/Lab4
 BugReports: https://github.com/albba064/Lab4/issues
 Suggests: 
+    caret,
+    mlbench,
     knitr,
+    MASS,
     rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Config/roxygen2/version: 8.1.0
 Imports: 
+    dplyr,
     ggplot2,
     grid,
-    png
+    nycflights13,
+    png,
+    rnaturalearth,
+    sf
