@@ -1,8 +1,8 @@
 ---
-title: "ridgereg_housing"
+title: "Ridgereg Housing"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{ridgereg_housing}
+  %\VignetteIndexEntry{ridgereg}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -105,10 +105,9 @@ Best model had `r forward_linreg$bestTune$nvmax` covariates
 The full linear model and forward selection model perform similarly on training data. 
 ```{r}
 pred_lm <- predict(linreg_mod1, newdata = train_boston)
-pred_null <- predict(null_model)
 
 if (best_nvmax == 0) {
-  pred_forward <- pred_null
+  pred_forward <- predict(null_model)
 } else {
   pred_forward <- predict(
     forward_linreg,
@@ -118,7 +117,6 @@ if (best_nvmax == 0) {
 
 training_results <- rbind(
   "LM model" = postResample(pred_lm, train_boston$medv),
-  "Intercept-only" = postResample(pred_null, train_boston$medv),
   "Forward Selection" = postResample(pred_forward, train_boston$medv)
 )
 
@@ -203,7 +201,8 @@ postResample(
 # Evaluate the performance of all three models on the test dataset and write some concluding comments.
 
 Conclusion: forward selection model appears to give the best RMSE (and Rsquared & MAE), though differences between the models' results are small. The normal lm model and ridge regesssion model both preform very similarly.  
-Overall,the predictive performance of all the models is satisfactory. 
+
+Overall, the predictive performance of all the models is satisfactory. 
 ```{r}
 lm_test <- predict(linreg_mod1, newdata = test_boston) |>
   postResample(obs = test_boston$medv)
