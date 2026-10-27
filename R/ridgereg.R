@@ -142,7 +142,7 @@ predict.ridgereg <- function(object, newdata, ...) {
 
   stopifnot(
     "newdata must be a data.frame" = is.data.frame(newdata),
-    "newdata cannot be an empty data.frame" = nrow(newdata) > 0  # fixed what were testing
+    "newdata cannot be an empty data.frame" = nrow(newdata) > 0
   )
 
   predictors <- stats::delete.response(object$terms)

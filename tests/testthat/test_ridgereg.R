@@ -38,7 +38,3 @@ testthat::test_that("ridgereg works as MASS::lm.ridge", {
     }
   }
 })
-
-## Kanskse behöver lägga till mer tests, jag förstod det på 
-# beskrivningen som att detta är det enda som krävs men test 
-# för fel input, och methoderna kankse också ska med?
