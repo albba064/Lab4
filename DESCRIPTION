@@ -22,6 +22,7 @@ LazyData: true
 URL: https://github.com/albba064/Lab4
 BugReports: https://github.com/albba064/Lab4/issues
 Suggests: 
+    leaps,
     caret,
     mlbench,
     knitr,
